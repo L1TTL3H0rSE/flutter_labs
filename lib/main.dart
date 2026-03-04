@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as p;
 import 'package:bcrypt/bcrypt.dart';
 
 void main() {
@@ -676,7 +676,7 @@ class _Lab5RegisterState extends State<Lab5Register> {
 class DatabaseHelper {
   static Future<Database> getDatabase() async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'security_labs.db');
+    final path = p.join(dbPath, 'security_labs.db');
     return openDatabase(
       path,
       version: 1,
