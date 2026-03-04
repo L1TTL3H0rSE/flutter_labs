@@ -55,7 +55,7 @@ final List<LabItem> labs = [
     page: const Lab4(),
   ),
   LabItem(
-    title: 'Лаба 3',
+    title: 'Лабораторная работа 3',
     subtitle: 'OAuth 2.0 (VK)',
     icon: Icons.login,
     page: const Lab3Screen(),
@@ -130,8 +130,8 @@ class Lab1 extends StatelessWidget {
           title: const Text('Шифры'),
           bottom: const TabBar(
             tabs: [
-              Tab(text: 'Атбаш (Лаба 1)'),
-              Tab(text: 'Цезарь (Лаба 2)'),
+              Tab(text: 'Атбаш'),
+              Tab(text: 'Цезарь'),
             ],
           ),
         ),
@@ -402,7 +402,9 @@ class _Lab4State extends State<Lab4> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Лаба 4: Аутентификация')),
+      appBar: AppBar(
+        title: const Text('Лабораторная работа 4: Аутентификация'),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -451,7 +453,9 @@ class Lab5Hub extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Лаба 5: Вход в систему')),
+      appBar: AppBar(
+        title: const Text('Лабораторная работа 5: Вход в систему'),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -789,14 +793,16 @@ class _Lab7ScreenState extends State<Lab7Screen> {
     if (perm == Permission.camera) return 'Для фото профиля и сканирования QR';
     if (perm == Permission.microphone) return 'Для голосового управления';
     if (perm == Permission.location) return 'Для отслеживания входа';
-    if (perm == Permission.sensors) return 'Для входа по отпечатку (Лаба 4)';
+    if (perm == Permission.sensors) return 'Для входа по отпечатку';
     return 'Необходимое разрешение';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Лаба 7: Аудит разрешений')),
+      appBar: AppBar(
+        title: const Text('Лабораторная работа 7: Аудит разрешений'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -893,7 +899,7 @@ class _Lab3ScreenState extends State<Lab3Screen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Лаба 3: OAuth 2.0')),
+      appBar: AppBar(title: const Text('Лабораторная работа 3: OAuth 2.0')),
       body: Center(
         child: _accessToken == null
             ? Column(
