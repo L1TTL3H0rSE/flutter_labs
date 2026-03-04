@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+import 'package:bcrypt/bcrypt.dart';
 
 void main() {
   runApp(const MainApp());
@@ -50,7 +53,7 @@ final List<LabItem> labs = [
     page: const Lab4(),
   ),
   LabItem(
-    title: "Лабораторная работа 5",
+    title: "Лабораторная работа 5 и 6",
     subtitle: "Формы и валидация",
     icon: Icons.app_registration,
     page: const Lab5Hub(), // Наш новый хаб
@@ -471,8 +474,39 @@ class Lab5Hub extends StatelessWidget {
   }
 }
 
-class Lab5Login extends StatelessWidget {
+class Lab5Login extends StatefulWidget {
   const Lab5Login({super.key});
+
+  @override
+  State<Lab5Login> createState() => _Lab5LoginState();
+}
+
+class _Lab5LoginState extends State<Lab5Login> {
+  final _loginCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  Future<void> _login() async {
+    final login = _loginCtrl.text;
+    final password = _passCtrl.text;
+    if (login.isEmpty || password.isEmpty) return;
+    final isSuccess = await DatabaseHelper.loginUser(login, password);
+    if (!mounted) return;
+    if (isSuccess) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Успешный вход! Секретный доступ открыт.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Неверный логин или пароль'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -482,34 +516,32 @@ class Lab5Login extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const TextField(
-              decoration: InputDecoration(
+            TextField(
+              controller: _loginCtrl,
+              decoration: const InputDecoration(
                 labelText: 'Логин',
-                hintText: 'Введите email',
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
-            const TextField(
+            TextField(
+              controller: _passCtrl,
               obscureText: true,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Пароль',
-                hintText: 'Введите пароль',
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
-              child: FilledButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Тут будет логика из Лабы 6!'),
-                    ),
-                  );
-                },
-                child: const Text('Войти'),
+              child: FilledButton.icon(
+                onPressed: _login,
+                icon: const Icon(Icons.login),
+                label: const Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: Text('Войти', style: TextStyle(fontSize: 18)),
+                ),
               ),
             ),
           ],
@@ -535,14 +567,26 @@ class _Lab5RegisterState extends State<Lab5Register> {
 
   final RegExp passwordRegExp = RegExp(r'^(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$');
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Успешная регистрация! Данные валидны.'),
-          backgroundColor: Colors.green,
-        ),
+      final result = await DatabaseHelper.registerUser(
+        _loginCtrl.text,
+        _passCtrl.text,
       );
+      if (!mounted) return;
+      if (result == 'success') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Успешная регистрация! Теперь войдите.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -626,5 +670,49 @@ class _Lab5RegisterState extends State<Lab5Register> {
         ),
       ),
     );
+  }
+}
+
+class DatabaseHelper {
+  static Future<Database> getDatabase() async {
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, 'security_labs.db');
+    return openDatabase(
+      path,
+      version: 1,
+      onCreate: (db, version) async {
+        await db.execute(
+          'CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, login TEXT UNIQUE, hash TEXT)',
+        );
+      },
+    );
+  }
+
+  static Future<String> registerUser(String login, String password) async {
+    final db = await getDatabase();
+    final existing = await db.query(
+      'users',
+      where: 'login = ?',
+      whereArgs: [login],
+    );
+    if (existing.isNotEmpty) {
+      return 'Пользователь с таким логином уже существует!';
+    }
+
+    final String hashed = BCrypt.hashpw(password, BCrypt.gensalt());
+    await db.insert('users', {'login': login, 'hash': hashed});
+    return 'success';
+  }
+
+  static Future<bool> loginUser(String login, String password) async {
+    final db = await getDatabase();
+    final users = await db.query(
+      'users',
+      where: 'login = ?',
+      whereArgs: [login],
+    );
+    if (users.isEmpty) return false;
+    final hash = users.first['hash'] as String;
+    return BCrypt.checkpw(password, hash);
   }
 }
