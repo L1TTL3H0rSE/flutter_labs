@@ -49,6 +49,12 @@ final List<LabItem> labs = [
     icon: Icons.fingerprint,
     page: const Lab4(),
   ),
+  LabItem(
+    title: "Лабораторная работа 5",
+    subtitle: "Формы и валидация",
+    icon: Icons.app_registration,
+    page: const Lab5Hub(), // Наш новый хаб
+  ),
 ];
 
 class DashboardScreen extends StatelessWidget {
@@ -415,6 +421,207 @@ class _Lab4State extends State<Lab4> {
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class Lab5Hub extends StatelessWidget {
+  const Lab5Hub({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Лаба 5: Вход в систему')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.account_circle, size: 100, color: Colors.blue),
+            const SizedBox(height: 32),
+            FilledButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Lab5Login()),
+              ),
+              icon: const Icon(Icons.login),
+              label: const Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Text('Авторизация', style: TextStyle(fontSize: 18)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Lab5Register()),
+              ),
+              icon: const Icon(Icons.person_add),
+              label: const Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Text('Регистрация', style: TextStyle(fontSize: 18)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class Lab5Login extends StatelessWidget {
+  const Lab5Login({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Авторизация')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            const TextField(
+              decoration: InputDecoration(
+                labelText: 'Логин',
+                hintText: 'Введите email',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const TextField(
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Пароль',
+                hintText: 'Введите пароль',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Тут будет логика из Лабы 6!'),
+                    ),
+                  );
+                },
+                child: const Text('Войти'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class Lab5Register extends StatefulWidget {
+  const Lab5Register({super.key});
+
+  @override
+  State<Lab5Register> createState() => _Lab5RegisterState();
+}
+
+class _Lab5RegisterState extends State<Lab5Register> {
+  final _formKey = GlobalKey<FormState>();
+
+  final _loginCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  final _confirmPassCtrl = TextEditingController();
+
+  final RegExp passwordRegExp = RegExp(r'^(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$');
+
+  void _submit() {
+    if (_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Успешная регистрация! Данные валидны.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Регистрация')),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: [
+            TextFormField(
+              controller: _loginCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Логин',
+                hintText: 'Придумайте имя пользователя',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Поле обязательно для заполнения';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            TextFormField(
+              controller: _passCtrl,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Пароль',
+                hintText: 'Минимум 8 симв., 1 цифра, 1 спецсимвол',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Поле обязательно для заполнения';
+                }
+                if (!passwordRegExp.hasMatch(value)) {
+                  return 'Пароль слишком простой (нужна цифра и спецсимвол)';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            TextFormField(
+              controller: _confirmPassCtrl,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Подтвердите пароль',
+                hintText: 'Введите пароль еще раз',
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Поле обязательно для заполнения';
+                }
+                if (value != _passCtrl.text) {
+                  return 'Пароли не совпадают!';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 24),
+
+            FilledButton.icon(
+              onPressed: _submit,
+              icon: const Icon(Icons.check),
+              label: const Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Text(
+                  'Зарегистрироваться',
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+            ),
           ],
         ),
       ),
